@@ -74,8 +74,8 @@ func (b *Bucket) Tx() *Tx {
 }
 
 // Root returns the root of the bucket.
-func (b *Bucket) Root() pgid {
-	return b.root
+func (b *Bucket) Root() uint64 {
+	return uint64(b.root)
 }
 
 // Writable returns whether the bucket is writable.
@@ -394,13 +394,13 @@ func (b *Bucket) ForEach(fn func(k, v []byte) error) error {
 	return nil
 }
 
-// Stat returns stats on a bucket.
+// Stats returns stats on a bucket.
 func (b *Bucket) Stats() BucketStats {
 	var s, subStats BucketStats
 	pageSize := b.tx.db.pageSize
-	s.BucketN += 1
+	s.BucketN++
 	if b.root == 0 {
-		s.InlineBucketN += 1
+		s.InlineBucketN++
 	}
 	b.forEachPage(func(p *page, depth int) {
 		if (p.flags & leafPageFlag) != 0 {
@@ -750,6 +750,7 @@ type BucketStats struct {
 	InlineBucketInuse int // bytes used for inlined buckets (also accounted for in LeafInuse)
 }
 
+// Add merge bucket
 func (s *BucketStats) Add(other BucketStats) {
 	s.BranchPageN += other.BranchPageN
 	s.BranchOverflowN += other.BranchOverflowN

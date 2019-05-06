@@ -263,8 +263,8 @@ func (tx *Tx) close() {
 	}
 	if tx.writable {
 		// Grab freelist stats.
-		var freelistFreeN = tx.db.freelist.free_count()
-		var freelistPendingN = tx.db.freelist.pending_count()
+		var freelistFreeN = tx.db.freelist.freeCount()
+		var freelistPendingN = tx.db.freelist.pendingCount()
 		var freelistAlloc = tx.db.freelist.size()
 
 		// Remove transaction ref & writer lock.
@@ -326,7 +326,7 @@ func (tx *Tx) WriteTo(w io.Writer) (n int64, err error) {
 
 	// Write meta 1 with a lower transaction id.
 	page.id = 1
-	page.meta().txid -= 1
+	page.meta().txid--
 	page.meta().checksum = page.meta().sum64()
 	nn, err = w.Write(buf)
 	n += int64(nn)

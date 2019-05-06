@@ -34,16 +34,16 @@ func (f *freelist) size() int {
 
 // count returns count of pages on the freelist
 func (f *freelist) count() int {
-	return f.free_count() + f.pending_count()
+	return f.freeCount() + f.pendingCount()
 }
 
-// free_count returns count of free pages
-func (f *freelist) free_count() int {
+// freeCount returns count of free pages
+func (f *freelist) freeCount() int {
 	return len(f.ids)
 }
 
-// pending_count returns count of pending pages
-func (f *freelist) pending_count() int {
+// pendingCount returns count of pending pages
+func (f *freelist) pendingCount() int {
 	var count int
 	for _, list := range f.pending {
 		count += len(list)
@@ -54,7 +54,7 @@ func (f *freelist) pending_count() int {
 // copyall copies into dst a list of all free ids and all pending ids in one sorted list.
 // f.count returns the minimum length required for dst.
 func (f *freelist) copyall(dst []pgid) {
-	m := make(pgids, 0, f.pending_count())
+	m := make(pgids, 0, f.pendingCount())
 	for _, list := range f.pending {
 		m = append(m, list...)
 	}

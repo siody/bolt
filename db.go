@@ -676,7 +676,7 @@ func (db *DB) Batch(fn func(*Tx) error) error {
 	db.batchMu.Unlock()
 
 	err := <-errCh
-	if err == trySolo {
+	if err == errTrySolo {
 		err = db.Update(fn)
 	}
 	return err
@@ -731,7 +731,7 @@ retry:
 			c := b.calls[failIdx]
 			b.calls[failIdx], b.calls = b.calls[len(b.calls)-1], b.calls[:len(b.calls)-1]
 			// tell the submitter re-run it solo, continue with the rest of the batch
-			c.err <- trySolo
+			c.err <- errTrySolo
 			continue retry
 		}
 
@@ -743,10 +743,10 @@ retry:
 	}
 }
 
-// trySolo is a special sentinel error value used for signaling that a
+// errTrySolo is a special sentinel error value used for signaling that a
 // transaction function should be re-run. It should never be seen by
 // callers.
-var trySolo = errors.New("batch function returned an error and should be re-run solo")
+var errTrySolo = errors.New("batch function returned an error and should be re-run solo")
 
 type panicked struct {
 	reason interface{}
@@ -782,7 +782,7 @@ func (db *DB) Stats() Stats {
 	return db.stats
 }
 
-// This is for internal access to the raw data bytes from the C cursor, use
+// Info This is for internal access to the raw data bytes from the C cursor, use
 // carefully, or not at all.
 func (db *DB) Info() *Info {
 	return &Info{uintptr(unsafe.Pointer(&db.data[0])), db.pageSize}
@@ -887,6 +887,7 @@ func (db *DB) grow(sz int) error {
 	return nil
 }
 
+// IsReadOnly for db boot
 func (db *DB) IsReadOnly() bool {
 	return db.readOnly
 }
@@ -962,6 +963,7 @@ func (s *Stats) add(other *Stats) {
 	s.TxStats.add(&other.TxStats)
 }
 
+//Info paged
 type Info struct {
 	Data     uintptr
 	PageSize int
